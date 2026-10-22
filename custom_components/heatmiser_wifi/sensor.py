@@ -135,13 +135,17 @@ class programSensor(SensorEntity):
             sat_t_str = [0,0,0,0,0,0,0,0,0,0,0,0,]
             sun_t_str = [0,0,0,0,0,0,0,0,0,0,0,0,]
 
-            wehw_t_dict = (self.hass.data[DOMAIN]['heatmiser_info']['weekend_hw_triggers'])
-            wdhw_t_dict = (self.hass.data[DOMAIN]['heatmiser_info']['weekday_hw_triggers'])
 
-            for y in range(0,4):
-                for x in range(0,4):
-                    wehw_t_str = wehw_t_str + str((list(((list(wehw_t_dict.items())[y])[1]).items())[x])[1]) + "," 
-                    wdhw_t_str = wdhw_t_str + str((list(((list(wdhw_t_dict.items())[y])[1]).items())[x])[1]) + "," 
+            wehw_t_dict = self.hass.data[DOMAIN]['heatmiser_info'].get('weekend_hw_triggers', {})
+            wdhw_t_dict = self.hass.data[DOMAIN]['heatmiser_info'].get('weekday_hw_triggers', {})
+
+
+            if wehw_t_dict and wdhw_t_dict:
+                for y in range(0, 4):
+                    for x in range(0, 4):
+                        wehw_t_str = wehw_t_str + str((list(((list(wehw_t_dict.items())[y])[1]).items())[x])[1]) + ","
+                        wdhw_t_str = wdhw_t_str + str((list(((list(wdhw_t_dict.items())[y])[1]).items())[x])[1]) + ","
+
 
             monhw_t_str = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
             tuehw_t_str = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,]
@@ -185,9 +189,15 @@ class air_temp_sensor(SensorEntity):
     #def device_class(self) -> str:
     #    return SensorDeviceClass.TEMPERATURE
 
+
     @property
-    def suggested_unit_of_measurement(self) -> str:
+    def device_class(self) -> SensorDeviceClass:
+        return SensorDeviceClass.TEMPERATURE
+
+    @property
+    def native_unit_of_measurement(self) -> str:
         return UnitOfTemperature.CELSIUS
+
 
     @property
     def icon(self) -> str | None:
@@ -211,7 +221,8 @@ class air_temp_sensor(SensorEntity):
             'frost_protect_setpoint': self.hass.data[DOMAIN]['heatmiser_info']['frost_protect_temperature'],
             'frost_protect_mode': 1 if (self.hass.data[DOMAIN]['heatmiser_info']['run_mode'] == 'Frost protection mode') else 0,
             'away_mode': 1 if (self.hass.data[DOMAIN]['heatmiser_info']['away_mode'] == 'On') else 0,
-            'hot_water_state': 1 if (self.hass.data[DOMAIN]['heatmiser_info']['hot_water_state'] == 'On') else 0
+            'hot_water_state': 1 if (self.hass.data[DOMAIN]['heatmiser_info'].get('hot_water_state') == 'On') else 0
+
         }
 
 class date_time_sensor(SensorEntity):
