@@ -72,13 +72,40 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
         hass.data[DOMAIN]['heatmiser'].set_value('date_time',hass.data[DOMAIN]['time_offset'])
         hass.data[DOMAIN]['heatmiser'].disconnect()
 
+
     def update_triggers(call):
         trigger = call.data.get("trigger")
         values = call.data.get("values")
-        hass.data[DOMAIN]['heatmiser'].connect()
-        hass.data[DOMAIN]['heatmiser'].set_value(trigger,values)
-        hass.data[DOMAIN]['heatmiser'].disconnect()
-        hass.data[DOMAIN]['heatmiser_info'][trigger] = values
+
+        if trigger not in ("weekday_triggers", "weekend_triggers"):
+            raise ValueError("Unsupported schedule type")
+
+        values = [
+            int(v.strip())
+            for v in values.split(",")
+            if v.strip()
+        ]
+
+        if len(values) != 12:
+            raise ValueError("Expected exactly 12 values")
+
+        for i in range(0, 12, 3):
+            hour, minute, temp = values[i:i+3]
+
+            if not (
+                0 <= hour <= 23
+                and minute in (0, 30)
+                and 5 <= temp <= 30
+            ):
+                raise ValueError("Invalid schedule value")
+
+        heatmiser = hass.data[DOMAIN]['heatmiser']
+
+        heatmiser.connect()
+        try:
+            heatmiser.set_value(trigger, values)
+        finally:
+            heatmiser.disconnect()
 
     hass.services.register(DOMAIN, "set_value", set_value)
     hass.services.register(DOMAIN, "update_date_time", update_date_time)
