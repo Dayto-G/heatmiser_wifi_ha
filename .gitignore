@@ -12,3 +12,5 @@ dist
 *.bak
 *.old
 *.prev
+
+node_modules/

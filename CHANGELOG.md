@@ -1,5 +1,10 @@
 ## Changelog
 
+### Unreleased
+- Add editable weekday/weekend step graphs, independent saves and device readback.
+- Validate chronological schedules and Celsius/5/2 mode before schedule writes.
+- Preserve existing PRT fixes and service payload format.
+
 ### v0.1.1 - Feb 2025
 
    - Fix deprecated features which were removed in HA Core 2025.1 https://developers.home-assistant.io/blog/2023/12/28/support-feature-magic-numbers-deprecation:
