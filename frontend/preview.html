@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heatmiser card preview</title><style>body{--primary-color:#d46a20;--divider-color:#d8dfe5;--card-background-color:#fff;--primary-text-color:#18232c;--secondary-text-color:#52636e;margin:24px auto;max-width:720px;font:16px system-ui;background:#f3f5f7;color:#18232c;padding:0 12px}ha-card{display:block;background:white;border-radius:14px;box-shadow:0 2px 8px #0001;--primary-color:#d46a20;--divider-color:#d8dfe5;--card-background-color:#fff;--primary-text-color:#18232c;--secondary-text-color:#52636e}</style><p>Preview using simulated Home Assistant data. No thermostat connection.</p><heatmiser-schedule-card></heatmiser-schedule-card><script type="module">
+import './heatmiser-schedule-card.js';
+const card=document.querySelector('heatmiser-schedule-card');
+const program={entity_id:'sensor.heating_program_mode',state:'0',attributes:{weekday_triggers:'6,30,20,8,0,17,17,0,21,22,30,16,',weekend_triggers:'8,0,20,10,0,18,17,0,21,23,0,16,'}};
+const states={ [program.entity_id]:program,'climate.heating':{state:'heat',attributes:{temperature_unit:'°C'}} };
+card.setConfig({entity:program.entity_id,climate_entity:'climate.heating'});
+card.hass={states,callService:async(domain,service,data)=>{if(service==='update_triggers'){program.attributes[data.trigger]=data.values;card.hass={...card._hass};}},callWS:async()=>Object.values(states)};
+</script></html>
