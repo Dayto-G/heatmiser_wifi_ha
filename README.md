@@ -10,10 +10,10 @@ This is [Dayto-G's fork](https://github.com/Dayto-G/heatmiser_wifi_ha) of the lo
 | Version / branch | Status |
 | --- | --- |
 | [v1.2.0](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.2.0) | Current public stable release, including the visual schedule editor, automatic chart scale and day/night reference. |
-| [v1.1.2](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.1.2) | Previous stable release without the bundled schedule editor; still the current `main` baseline while PR #1 is pending. |
-| `feat/visual-heating-schedule` / [PR #1](https://github.com/Dayto-G/heatmiser_wifi_ha/pull/1) | Development branch containing the released editor and subsequent documentation changes; not yet merged into `main`. |
+| [v1.1.2](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.1.2) | Previous stable release without the bundled schedule editor. |
+| `feat/visual-heating-schedule` / [PR #1](https://github.com/Dayto-G/heatmiser_wifi_ha/pull/1) | Development branch for the editor and documentation. PR #1 has been merged into `main`. |
 
-The maintainer has published **v1.2.0 as stable**. Its tag points to the editor code previously prepared as beta.5. **Known metadata discrepancy:** the integration manifest inside that release still reports `1.2.0-beta.5`, so HA may show that version even when HACS has downloaded `v1.2.0`. This does not mean a different build was installed. The development branch now reports `1.2.0` in its manifest. The existing release/tag is left intact, so its already-published archive still contains the older manifest value; the correction will be included when the updated branch is released. Older `v1.2.0-beta.*` releases are historical pre-releases. Status checked on 23 October 2026.
+The maintainer has published **v1.2.0 as stable**. Its tag points to the editor code previously prepared as beta.5. **Known metadata discrepancy:** the integration manifest inside that release still reports `1.2.0-beta.5`, so HA may show that version even when HACS has downloaded `v1.2.0`. This does not mean a different build was installed. The `main` branch now reports `1.2.0` in its manifest. The existing release/tag is left intact, so its already-published archive still contains the older manifest value; the correction will be included in a subsequent release. Older `v1.2.0-beta.*` releases are historical pre-releases. Status checked on 23 October 2026.
 
 ## Supported devices and features
 
