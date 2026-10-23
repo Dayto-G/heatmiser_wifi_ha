@@ -6,7 +6,7 @@ let Card;
 const registry = new Map();
 globalThis.customElements = { get: name => registry.get(name), define: (name, value) => { registry.set(name, value); if (name === 'heatmiser-schedule-card') Card = value; } };
 globalThis.window = {};
-const { parseSchedule, serialize, stepPath } = await import('../frontend/heatmiser-schedule-card.js');
+const { parseSchedule, serialize, stepPath, temperatureScale } = await import('../frontend/heatmiser-schedule-card.js');
 const good = '6,30,20,8,0,17,17,0,21,22,30,16';
 test('sensor round trip and validation', () => {
   assert.equal(serialize(parseSchedule(good + ',')), good);
@@ -137,4 +137,27 @@ test('standard HA climate states use the configured temperature unit', () => {
   c._hass.config = { unit_system: { temperature: '°C' } };
   c._hass.states['climate.heating'].attributes.temperature_unit = '°F';
   assert.match(c.problem(), /only supports Celsius/);
+});
+
+
+test('shared automatic scale includes both schedules with one degree margin', () => {
+  const weekday = parseSchedule('7,30,18,9,0,17,16,0,18,22,30,16');
+  const weekend = parseSchedule('8,0,18,10,0,17,16,0,18,23,0,16');
+  assert.deepEqual(temperatureScale([weekday, weekend]), { min: 15, max: 19 });
+  weekend[0].temp = 25;
+  assert.deepEqual(temperatureScale([weekday, weekend]), { min: 15, max: 26 });
+  assert.deepEqual(temperatureScale([weekday.map(row => ({ ...row, temp: 18 }))]), { min: 17, max: 19 });
+  assert.deepEqual(temperatureScale([undefined, []]), { min: 5, max: 30 });
+  weekend[0].temp = NaN;
+  assert.deepEqual(temperatureScale([weekday, weekend]), { min: 15, max: 19 });
+});
+
+test('automatic path keeps extreme legal setpoints and midnight carry within graph', () => {
+  const rows = parseSchedule('0,0,5,6,0,30,12,0,5,23,30,30');
+  const scale = temperatureScale([rows]);
+  assert.deepEqual(scale, { min: 4, max: 31 });
+  const path = stepPath(rows, 30, scale);
+  assert.ok(!/NaN|Infinity/.test(path));
+  const heights = [...path.matchAll(/(?:M42,| V)([\d.]+)/g)].map(match => Number(match[1]));
+  assert.ok(heights.every(y => y > 30 && y < 160));
 });

@@ -19,9 +19,16 @@ export function serialize(rows) {
   parseSchedule(raw);
   return raw;
 }
-export function stepPath(rows, initial) {
+export function temperatureScale(schedules) {
+  const temps = schedules.flatMap(rows => {
+    try { serialize(rows); return rows.map(row => row.temp); }
+    catch { return []; }
+  });
+  return temps.length ? { min: Math.min(...temps) - 1, max: Math.max(...temps) + 1 } : { min: 5, max: 30 };
+}
+export function stepPath(rows, initial, scale = { min: 5, max: 30 }) {
   const x = minute => 42 + minute / 1440 * 540;
-  const y = temp => 160 - (temp - 5) / 25 * 130;
+  const y = temp => 160 - (temp - scale.min) / (scale.max - scale.min) * 130;
   let path = `M42,${y(initial)}`;
   for (const row of rows) {
     const [h, m] = row.time.split(":").map(Number);
@@ -135,11 +142,12 @@ class HeatmiserScheduleCard extends HTMLElement {
     root.innerHTML = `<style>
       :host{display:block}ha-card{display:block;background:var(--ha-card-background,var(--card-background-color));border-radius:var(--ha-card-border-radius,12px);padding:20px;color:var(--primary-text-color)}h2{margin:0 0 8px;font-size:22px}h3{margin-bottom:4px}
       svg{width:100%;height:auto;color:var(--primary-color,#03a9f4)}text{fill:var(--secondary-text-color);font:12px sans-serif}
+      .day-band{fill:#f5c542;fill-opacity:.10}.night-band{fill:#6273a4;fill-opacity:.14}.reference{font-size:12px;color:var(--secondary-text-color)}
       .row{display:grid;grid-template-columns:30px 1fr 1fr;gap:12px;align-items:center;margin:8px 0}
       input,button{font:inherit;color:inherit;background:var(--card-background-color);border:1px solid var(--divider-color,#aaa);border-radius:6px;padding:9px;min-width:0}
       button{cursor:pointer;margin:8px 8px 0 0}button:disabled{opacity:.5;cursor:default}label{display:grid;gap:4px;font-size:13px}
       p{line-height:1.5}.status{white-space:pre-wrap}section{border-top:1px solid var(--divider-color,#ddd);margin-top:16px}
-      </style><ha-card><h2>Heating schedule</h2><p>Four periods per day group · 5–30 °C · 30-minute intervals</p><div class="problem" role="alert"></div><div class="groups"></div><button id="reload">Reload and discard changes</button><p class="status" role="status" aria-live="polite"></p></ha-card>`;
+      </style><ha-card><h2>Heating schedule</h2><p>Four periods per day group · 5–30 °C · 30-minute intervals</p><p class="reference">Light background: day 07:00–22:00 · Shaded: night. Fixed visual reference, not sunrise/sunset or a heating setting. Both charts share an automatic temperature scale.</p><div class="problem" role="alert"></div><div class="groups"></div><button id="reload">Reload and discard changes</button><p class="status" role="status" aria-live="polite"></p></ha-card>`;
     this.drawGraphs = [];
     const problem = this.problem();
     root.querySelector(".problem").textContent = problem;
@@ -158,10 +166,13 @@ class HeatmiserScheduleCard extends HTMLElement {
       // Monday/Saturday begin with the previous day's final setpoint. On other
       // days the same group's final setpoint carries over through midnight.
       const graph = document.createElement("div");
-      graph.innerHTML = `<svg viewBox="0 0 610 195" role="img" aria-label="${title}: temperature step chart"><path d="M42 25 V160 H582" fill="none" stroke="currentColor" opacity=".3"/><text x="0" y="35">30 °C</text><text x="0" y="163">5 °C</text><text x="42" y="185">00:00</text><text x="300" y="185">12:00</text><text x="550" y="185">24:00</text></svg>`;
+      graph.innerHTML = `<svg viewBox="0 0 610 195" role="img" aria-label="${title}: temperature step chart"><rect class="night-band" x="42" y="30" width="157.5" height="130"/><rect class="day-band" x="199.5" y="30" width="337.5" height="130"/><rect class="night-band" x="537" y="30" width="45" height="130"/><path d="M42 30 V160 H582" fill="none" stroke="currentColor" opacity=".3"/><text class="scale-max" x="0" y="35"></text><text class="scale-min" x="0" y="163"></text><text x="199.5" y="18">07:00</text><text x="509" y="18">22:00</text><text x="42" y="185">00:00</text><text x="300" y="185">12:00</text><text x="550" y="185">24:00</text></svg>`;
       section.append(graph);
       const draw = () => {
         graph.querySelectorAll(".schedule-line").forEach(n => n.remove());
+        const scale = temperatureScale(Object.values(this.drafts));
+        graph.querySelector(".scale-max").textContent = `${scale.max} °C`;
+        graph.querySelector(".scale-min").textContent = `${scale.min} °C`;
         try {
           serialize(rows);
           serialize(this.drafts[previousKey]);
@@ -169,7 +180,7 @@ class HeatmiserScheduleCard extends HTMLElement {
           const svg = graph.querySelector("svg");
           for (const [temp, opacity, dash] of [[rows[3].temp, ".35", "5 4"], [initial, "1", ""]]) {
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("class", "schedule-line");path.setAttribute("d", stepPath(rows, temp));
+            path.setAttribute("class", "schedule-line");path.setAttribute("d", stepPath(rows, temp, scale));
             path.setAttribute("fill", "none");path.setAttribute("stroke", "currentColor");path.setAttribute("stroke-width", "3");
             path.setAttribute("opacity", opacity);path.setAttribute("stroke-dasharray", dash);svg.append(path);
           }

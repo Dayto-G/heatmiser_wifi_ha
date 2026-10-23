@@ -1,5 +1,9 @@
 ## Changelog
 
+### v1.2.0-beta.5 - 23 October 2026
+- Use a shared automatic temperature scale with 1 °C margins.
+- Add subtle day/night backgrounds with a fixed 07:00–22:00 day reference.
+
 ### v1.2.0-beta.4 - 23 October 2026
 - Register the card in Lovelace storage resources, upgrading its own URL in place.
 - Read Celsius from HA configuration when the climate state omits its unit.
