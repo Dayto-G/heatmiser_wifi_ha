@@ -1,5 +1,10 @@
 ## Changelog
 
+### v1.2.0-beta.4 - 23 October 2026
+- Register the card in Lovelace storage resources, upgrading its own URL in place.
+- Read Celsius from HA configuration when the climate state omits its unit.
+- Document adding a shortcut from the new automatic Overview dashboard.
+
 ### v1.2.0-beta.3 - 23 October 2026
 - Fix services.yaml encoded with Windows-1252 instead of UTF-8.
 - Validate UTF-8 for packaged text files in the automated test suite.

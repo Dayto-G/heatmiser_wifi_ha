@@ -17,6 +17,14 @@ class StaticPathConfig:
     path: str
     cache_headers: bool
 
+class ResourceStorageCollection:
+    def __init__(self, items=None):
+        self.items = items or []
+        self.async_get_info = AsyncMock(return_value={"resources": len(self.items)})
+        self.async_create_item = AsyncMock()
+        self.async_update_item = AsyncMock()
+    def async_items(self): return self.items
+
 class FrontendTests(unittest.IsolatedAsyncioTestCase):
     def load_module(self):
         add_module = Mock()
@@ -25,6 +33,8 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
             'homeassistant.components': SimpleNamespace(frontend=SimpleNamespace(add_extra_js_url=add_module)),
             'homeassistant.components.http': SimpleNamespace(StaticPathConfig=StaticPathConfig),
             'homeassistant.core': SimpleNamespace(HomeAssistant=object),
+            'homeassistant.components.lovelace.const': SimpleNamespace(LOVELACE_DATA='lovelace'),
+            'homeassistant.components.lovelace.resources': SimpleNamespace(ResourceStorageCollection=ResourceStorageCollection),
         }
         spec = importlib.util.spec_from_file_location('frontend_under_test', ROOT / 'custom_components/heatmiser_wifi/frontend_setup.py')
         module = importlib.util.module_from_spec(spec)
@@ -48,6 +58,39 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
         digest = sha256(Path(config.path).read_bytes()).hexdigest()[:12]
         add.assert_called_once_with(hass, config.url_path + '?v=' + digest)
         hass.async_add_executor_job.assert_awaited_once()
+
+    async def test_storage_resource_is_created_or_upgraded_without_duplicates(self):
+        for items in [[], [{"id": "ours", "url": "/heatmiser_wifi/heatmiser-schedule-card.js?v=old", "type": "module"},
+                           {"id": "other", "url": "/local/unrelated.js", "type": "module"}]]:
+            with self.subTest(items=items):
+                module, add = self.load_module()
+                hass = self.hass()
+                resources = ResourceStorageCollection(items)
+                hass.data['lovelace'] = SimpleNamespace(resources=resources)
+                await module.async_register_frontend(hass)
+                await module.async_register_frontend(hass)
+                resources.async_get_info.assert_awaited_once()
+                if items:
+                    resources.async_create_item.assert_not_called()
+                    args = resources.async_update_item.call_args.args
+                    self.assertEqual(args[0], 'ours')
+                    self.assertEqual(args[1]['res_type'], 'module')
+                    self.assertEqual(resources.items[1]['url'], '/local/unrelated.js')
+                else:
+                    resources.async_create_item.assert_awaited_once()
+                    self.assertEqual(resources.async_create_item.call_args.args[0]['res_type'], 'module')
+                add.assert_not_called()
+
+    async def test_resource_failure_can_retry_without_registering_static_path_twice(self):
+        module, _ = self.load_module()
+        hass = self.hass()
+        resources = ResourceStorageCollection()
+        resources.async_get_info.side_effect = [OSError('storage failure'), {}]
+        hass.data['lovelace'] = {'resources': resources}
+        with self.assertRaises(OSError): await module.async_register_frontend(hass)
+        await module.async_register_frontend(hass)
+        hass.http.async_register_static_paths.assert_awaited_once()
+        resources.async_create_item.assert_awaited_once()
 
     async def test_registration_failure_does_not_mark_registered(self):
         module, add = self.load_module()

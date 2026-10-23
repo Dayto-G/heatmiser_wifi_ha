@@ -84,7 +84,10 @@ class HeatmiserScheduleCard extends HTMLElement {
     if (!sensor || !climate || [sensor.state, climate.state].some(s => ["unknown", "unavailable"].includes(s)))
       return "Thermostat or program sensor unavailable.";
     if (sensor.state !== "0") return "This card requires weekday/weekend (5/2) mode.";
-    if (climate.attributes.temperature_unit !== "°C") return "This card only supports Celsius.";
+    // Climate states usually omit temperature_unit; HA exposes the display
+    // unit in its global configuration. The service also checks device units.
+    const unit = climate.attributes.temperature_unit ?? this._hass.config?.unit_system?.temperature;
+    if (unit !== "°C") return "This card only supports Celsius.";
     return "";
   }
   conflict(key) {

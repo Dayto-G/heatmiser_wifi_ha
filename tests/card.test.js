@@ -124,3 +124,17 @@ test('loading another version does not register the card or picker entry twice',
   assert.equal(registry.get('heatmiser-schedule-card'), Card);
   assert.equal(window.customCards.length, 1);
 });
+
+test('standard HA climate states use the configured temperature unit', () => {
+  const c = card();
+  delete c._hass.states['climate.heating'].attributes.temperature_unit;
+  c._hass.config = { unit_system: { temperature: '°C' } };
+  assert.equal(c.problem(), '');
+  c._hass.config.unit_system.temperature = '°F';
+  assert.match(c.problem(), /only supports Celsius/);
+  delete c._hass.config;
+  assert.match(c.problem(), /only supports Celsius/);
+  c._hass.config = { unit_system: { temperature: '°C' } };
+  c._hass.states['climate.heating'].attributes.temperature_unit = '°F';
+  assert.match(c.problem(), /only supports Celsius/);
+});
