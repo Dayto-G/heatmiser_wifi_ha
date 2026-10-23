@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 globalThis.HTMLElement = class {};
@@ -67,4 +68,11 @@ test('refresh deliberately replaces drafts; background updates preserve dirty dr
   c.hass = { ...c._hass }; assert.equal(c.drafts.weekday_triggers[0].temp, 19);
   await c.action(); assert.equal(c.drafts.weekday_triggers[0].temp, 20);
   assert.equal(c.dirty.weekday_triggers, false);
+});
+
+test('HACS integration bundle contains the exact dashboard card', () => {
+  assert.equal(
+    readFileSync(new URL('../custom_components/heatmiser_wifi/frontend/heatmiser-schedule-card.js', import.meta.url), 'utf8'),
+    readFileSync(new URL('../frontend/heatmiser-schedule-card.js', import.meta.url), 'utf8')
+  );
 });

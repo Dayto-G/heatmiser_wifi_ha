@@ -61,10 +61,14 @@ It uses the existing `heatmiser_wifi.update_triggers` service and
 
 ### Installation and dashboard setup
 
-1. Install the modified integration from this branch in
-   `/config/custom_components/heatmiser_wifi/`, including `schedule.py`, and restart HA.
-2. Copy `frontend/heatmiser-schedule-card.js` to
-   `/config/www/heatmiser-schedule-card.js` (create `www` if needed).
+1. Install this prerelease using the HACS steps below, or copy the integration
+   into `/config/custom_components/heatmiser_wifi/`, including `schedule.py`, and
+   restart HA.
+2. HACS installs the bundled card at
+   `/config/custom_components/heatmiser_wifi/frontend/heatmiser-schedule-card.js`.
+   Copy that file to `/config/www/heatmiser-schedule-card.js` (create `www` if
+   needed). When installing from a source checkout, `frontend/heatmiser-schedule-card.js`
+   is an identical copy. Repeat the copy after updating the card.
 3. Under **Settings → Dashboards → Resources**, add a JavaScript module:
    `/local/heatmiser-schedule-card.js?v=1`. For later updates, change the version
    parameter and refresh the browser cache. For YAML-managed resources:
@@ -136,3 +140,30 @@ thermostat. Final end-to-end validation requires a physical Heatmiser and HA.
 Remove the card and dashboard resource to roll back the interface. If needed,
 restore the previous integration version and restart HA. Removing the card does
 not restore previously saved thermostat schedules: record them beforehand.
+
+### Testing v1.2.0-beta.1 with HACS
+
+The stable GitHub release v1.1.2 and the main branch are unchanged. Installing a
+beta in the same Home Assistant instance replaces that instance's installed
+integration files. For side-by-side testing while production keeps running
+v1.1.2, use a separate Home Assistant test instance.
+
+1. Back up your HA configuration and record the thermostat's current schedules.
+2. In HACS, ensure the repository URL is `Dayto-G/heatmiser_wifi_ha` (the upstream
+   `iainbullock` or `midstar` repository will not show this beta). If needed, add
+   this repository under Custom repositories with category **Integration**.
+3. Open **HACS → Heatmiser WiFi → ⋮ → Redownload → Need a different version?**.
+   Enable prerelease/beta versions if your HACS version offers that option, select
+   **v1.2.0-beta.1**, then download it. If missing, use **Update information**
+   or check for updates, and reopen the download dialog.
+4. Restart Home Assistant. The manifest version is `1.2.0-beta.1`.
+5. Complete steps 2–4 above to copy the bundled JavaScript, register the dashboard
+   resource and add the card. HACS installs the integration bundle; it does not
+   register or copy the card into `/config/www` automatically.
+6. Compare both schedules with the thermostat before editing. Save one deliberate
+   change and verify it on the thermostat. This beta supports Celsius and 5/2
+   mode only; it does not switch the thermostat into a different program mode.
+
+To return to stable, use the same Redownload dialog, select **v1.1.2**, download
+and restart HA. Remove the beta dashboard card/resource if no longer used.
+Downgrading the integration does not undo schedule changes written to the device.

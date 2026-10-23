@@ -1,5 +1,11 @@
 ## Changelog
 
+### v1.2.0-beta.1 - 23 October 2026
+- Prerelease of the editable weekday/weekend schedule card and validation.
+- Bundle the dashboard JavaScript inside the integration for HACS downloads.
+- Document beta installation, card setup and return to stable v1.1.2.
+- Preserve existing PRT fixes; stable main and v1.1.2 remain unchanged.
+
 ### Unreleased
 - Add editable weekday/weekend step graphs, independent saves and device readback.
 - Validate chronological schedules and Celsius/5/2 mode before schedule writes.
