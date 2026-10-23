@@ -1,5 +1,9 @@
 ## Changelog
 
+### v1.2.0 - 23 October 2026
+- Maintainer-published stable release of the visual schedule editor, including the automatic scale and day/night reference.
+- Published from the beta.5 commit; the existing release archive still reports 1.2.0-beta.5 in its manifest.
+
 ### v1.2.0-beta.5 - 23 October 2026
 - Use a shared automatic temperature scale with 1 °C margins.
 - Add subtle day/night backgrounds with a fixed 07:00–22:00 day reference.
@@ -27,10 +31,17 @@
 - Preserve existing PRT fixes; stable main and v1.1.2 remain unchanged.
 
 ### Unreleased
-- Rewrite the README for the Dayto-G fork, clarify release/compatibility status, and verify unchanged upstream MIT notices.
+- Align the development manifest version with stable v1.2.0; leave the existing published tag intact.
+- Rewrite the README for the Dayto-G fork, document the maintainer-approved stable v1.2.0 release and compatibility limits, and verify unchanged upstream MIT notices.
 - Add editable weekday/weekend step graphs, independent saves and device readback.
 - Validate chronological schedules and Celsius/5/2 mode before schedule writes.
 - Preserve existing PRT fixes and service payload format.
+
+### v1.1.2 - 22 October 2026
+- Convert and validate weekday/weekend heating payloads before writing; always disconnect after a write attempt.
+- Handle missing hot-water trigger/state keys on heating-only thermostats.
+- Set the air-temperature sensor device class and native Celsius unit.
+- Update manifest ownership, documentation and issue links for the Dayto-G fork.
 
 ### v0.1.1 - Feb 2025
 

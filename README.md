@@ -9,11 +9,11 @@ This is [Dayto-G's fork](https://github.com/Dayto-G/heatmiser_wifi_ha) of the lo
 
 | Version / branch | Status |
 | --- | --- |
-| [v1.1.2](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.1.2) / `main` | Stable baseline for this fork; no bundled schedule editor. |
-| `feat/visual-heating-schedule` / [PR #1](https://github.com/Dayto-G/heatmiser_wifi_ha/pull/1) | Schedule-editor development; **beta**, pending testing and review. |
-| [v1.2.0](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.2.0) | Currently published on GitHub without the pre-release flag, but its integration manifest is **1.2.0-beta.5**. Treat the schedule editor in this release as **beta**. |
+| [v1.2.0](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.2.0) | Current public stable release, including the visual schedule editor, automatic chart scale and day/night reference. |
+| [v1.1.2](https://github.com/Dayto-G/heatmiser_wifi_ha/releases/tag/v1.1.2) | Previous stable release without the bundled schedule editor; still the current `main` baseline while PR #1 is pending. |
+| `feat/visual-heating-schedule` / [PR #1](https://github.com/Dayto-G/heatmiser_wifi_ha/pull/1) | Development branch containing the released editor and subsequent documentation changes; not yet merged into `main`. |
 
-The release labels and manifest version above were checked on 23 October 2026. Do not rely on GitHub's “Latest” label to choose the stable baseline: explicitly select **v1.1.2** for stable use. The former `v1.2.0-beta.5` release link is no longer present in the release list; the same code is currently tagged `v1.2.0`. Earlier beta releases remain available. This documentation does not change any release labels or tags.
+The maintainer has published **v1.2.0 as stable**. Its tag points to the editor code previously prepared as beta.5. **Known metadata discrepancy:** the integration manifest inside that release still reports `1.2.0-beta.5`, so HA may show that version even when HACS has downloaded `v1.2.0`. This does not mean a different build was installed. The development branch now reports `1.2.0` in its manifest. The existing release/tag is left intact, so its already-published archive still contains the older manifest value; the correction will be included when the updated branch is released. Older `v1.2.0-beta.*` releases are historical pre-releases. Status checked on 23 October 2026.
 
 ## Supported devices and features
 
@@ -22,8 +22,8 @@ This integration uses the legacy **Heatmiser WiFi** protocol through the `heatmi
 | Model | Support and limits |
 | --- | --- |
 | DT / DT-E WiFi | Basic temperature and heating controls inherited from Joel's integration; the schedule editor is intended for programmable models exposing four heating periods. |
-| PRT / PRT-E WiFi | Programmable thermostat support inherited from Joel's integration. The beta editor requires Celsius and weekday/weekend (5/2) mode. PRT schedule display and editing controls have been smoke-tested on the maintainer's installation; physical schedule writes remain a deliberate user test. |
-| PRT-HW WiFi | Support and additional heating/hot-water data inherited from Iain's fork. The beta card edits **heating only**, not hot-water schedules. |
+| PRT / PRT-E WiFi | Programmable thermostat support inherited from Joel's integration. The editor requires Celsius and weekday/weekend (5/2) mode. PRT schedule display and editing controls have been smoke-tested on the maintainer's installation; physical schedule writes remain a deliberate user test. |
+| PRT-HW WiFi | Support and additional heating/hot-water data inherited from Iain's fork. The card edits **heating only**, not hot-water schedules. |
 
 Features depend on the thermostat model and firmware:
 
@@ -40,7 +40,7 @@ Configuration is **YAML-based**; there is no UI configuration flow under “Add 
 
 The code includes the upstream migrations to `UnitOfTemperature`, `HVACMode`, `HVACAction`, `ClimateEntityFeature` and directly imported discovery helpers for API removals in HA 2025.1/2025.5. This does **not** establish a tested minimum version or promise compatibility with every HA release. Neither the integration manifest nor `hacs.json` currently declares a minimum HA version.
 
-The beta frontend uses HA's `StaticPathConfig`, Lovelace resource storage and frontend module APIs. Display, entity selection, refresh and unsaved editing have been checked on the maintainer's live PRT installation. There is no full HA-version/model/firmware test matrix. CI runs isolated Python 3.13 and Node.js 22 tests; those tests stub HA interfaces and do not replace running HA or physical thermostat tests. When reporting an issue, include your exact HA Core version, integration version, model, firmware if known, program mode and relevant logs.
+The frontend uses HA's `StaticPathConfig`, Lovelace resource storage and frontend module APIs. Display, entity selection, refresh and unsaved editing have been checked on the maintainer's live PRT installation. There is no full HA-version/model/firmware test matrix. CI runs isolated Python 3.13 and Node.js 22 tests; those tests stub HA interfaces and do not replace running HA or physical thermostat tests. When reporting an issue, include your exact HA Core version, integration version, model, firmware if known, program mode and relevant logs.
 
 ## Fixes included in v1.1.2
 
@@ -51,7 +51,7 @@ Compared with Iain's upstream baseline, this fork's [v1.1.2 changes](https://git
 - Declare the air-temperature sensor's temperature device class and native Celsius unit.
 - Point integration ownership, documentation and issue links to Dayto-G's fork and set the manifest version to 1.1.2.
 
-The beta retains these fixes and adds stricter chronological schedule validation, device mode/unit checks and readback verification. Those extra protections and the dashboard card are **beta additions**, not features shipped in v1.1.2.
+Version 1.2.0 retains these fixes and adds stricter chronological schedule validation, device mode/unit checks and readback verification. Those extra protections and the dashboard card are **v1.2.0 additions**, not features shipped in v1.1.2.
 
 ## Installation
 
@@ -60,14 +60,14 @@ The beta retains these fixes and adds stricter chronological schedule validation
 1. Install and configure [HACS](https://www.hacs.dev/) if needed.
 2. Open **HACS → ⋮ → Custom repositories**. Add `https://github.com/Dayto-G/heatmiser_wifi_ha`, choose type **Integration**, then **Add**. See the [HACS custom repository instructions](https://www.hacs.dev/docs/faq/custom_repositories/).
 3. Open **Heatmiser WiFi** and check that the repository/owner is **Dayto-G**, not `iainbullock` or `midstar`.
-4. Download the desired version. For the stable baseline, explicitly select **v1.1.2** in the download/version dialog. For an existing installation use **⋮ → Redownload → Need a different version?**. Labels vary slightly with HACS versions.
+4. Download the desired version. For the current stable release, select **v1.2.0** (or explicitly choose **v1.1.2** to keep the older release) in the download/version dialog. For an existing installation use **⋮ → Redownload → Need a different version?**. Labels vary slightly with HACS versions.
 5. Add or retain the YAML configuration below, check the configuration and **restart Home Assistant**. Downloading with HACS alone does not configure or load this YAML integration.
 
-All forks use the same `custom_components/heatmiser_wifi` directory and domain. A download replaces the integration installed in that HA instance; forks and beta/stable versions cannot run side by side there. Keep a backup before switching, preserve your YAML configuration and avoid having another HACS repository manage the same directory. Use a separate HA test instance if production must stay on v1.1.2.
+All forks use the same `custom_components/heatmiser_wifi` directory and domain. A download replaces the integration installed in that HA instance; different forks or versions cannot run side by side there. Keep a backup before switching, preserve your YAML configuration and avoid having another HACS repository manage the same directory. Use a separate HA test instance if production must stay on v1.1.2.
 
 ### Manual installation
 
-Download the chosen release source archive and copy **the entire** `custom_components/heatmiser_wifi` directory into your HA configuration directory's `custom_components` folder. The final manifest path must be `/config/custom_components/heatmiser_wifi/manifest.json` on a typical HA OS installation, without an extra nested directory. Include the `frontend` subdirectory for beta versions. Configure YAML and restart HA. HACS is the preferred route for update tracking.
+Download the chosen release source archive and copy **the entire** `custom_components/heatmiser_wifi` directory into your HA configuration directory's `custom_components` folder. The final manifest path must be `/config/custom_components/heatmiser_wifi/manifest.json` on a typical HA OS installation, without an extra nested directory. Include the `frontend` subdirectory for v1.2.0 and its pre-releases. Configure YAML and restart HA. HACS is the preferred route for update tracking.
 
 ## Configuration
 
@@ -93,9 +93,9 @@ heatmiser_wifi:
 | `min_temp` / `max_temp` | No | `5` / `25` | Climate entity target-temperature control limits. |
 | `step_temp` | No | `1` | Climate entity target-temperature control step. |
 
-These climate control limits do not redefine the beta schedule editor's validation range. Entity IDs depend on the name and your existing entity registry. With `friendly_name: "Heating"`, typical IDs are `climate.heating` and `sensor.heating_program_mode`; check your actual IDs rather than assuming them.
+These climate control limits do not redefine the schedule editor's validation range. Entity IDs depend on the name and your existing entity registry. With `friendly_name: "Heating"`, typical IDs are `climate.heating` and `sensor.heating_program_mode`; check your actual IDs rather than assuming them.
 
-## Visual heating schedule — BETA
+## Visual heating schedule — v1.2.0
 
 The bundled `heatmiser-schedule-card` shows two editable temperature step charts, with **four periods for weekdays and four for the weekend**. It uses the existing `heatmiser_wifi.update_triggers` action and the program-mode sensor's schedule attributes; it does not create a new schedule entity.
 
@@ -104,7 +104,7 @@ Requirements: the current single-thermostat integration, **Celsius**, **5/2 mode
 ### Installation and dashboard setup
 
 1. Back up your HA configuration and record the thermostat's schedules.
-2. In **HACS → Heatmiser WiFi → ⋮ → Redownload → Need a different version?**, explicitly select **v1.2.0** for the current beta.5 code, subject to the release-status discrepancy above. Earlier pre-release versions can also be selected; enable beta/prerelease visibility if your HACS version offers it. If a version is missing, use **Update information** and reopen the download dialog.
+2. In **HACS → Heatmiser WiFi → ⋮ → Redownload → Need a different version?**, select **v1.2.0**, the current stable release. Its manifest-version discrepancy is explained above. Earlier pre-release versions can also be selected; enable beta/prerelease visibility if your HACS version offers it. If a version is missing, use **Update information** and reopen the download dialog.
 3. Download, **restart Home Assistant**, wait for the integration to become available, then refresh the browser or reopen the HA app.
 4. On an editable dashboard, choose **Edit dashboard → Add card → Heatmiser heating schedule**. Check the automatically suggested thermostat and schedule-sensor entities, then save the card.
 
@@ -184,8 +184,8 @@ not restore previously saved thermostat schedules: record them beforehand.
 
 - **Card not found / configuration error:** wait until startup finishes, refresh the browser, confirm the installed version and check HA logs for frontend-registration errors. The editor is a custom card, not an entity in the entity picker.
 - **No schedules / unavailable:** check both entity IDs, thermostat connectivity, Celsius and 5/2 mode. Use **Reload and discard changes** after startup.
-- **UTF-8 error in `services.yaml`:** older beta builds had a Windows-1252 encoding issue, fixed in beta.3. Download the current test code and restart HA; do not copy the older metadata file over it.
-- **Returning to stable:** select **v1.1.2** via HACS Redownload, restart HA and remove the beta card if no longer wanted. Downgrading does not undo schedule values already written to the thermostat. Restore device schedules deliberately if required.
+- **UTF-8 error in `services.yaml`:** older beta builds had a Windows-1252 encoding issue, fixed in beta.3. Download v1.2.0 or newer code containing that fix and restart HA; do not copy the older metadata file over it.
+- **Returning to v1.1.2:** select **v1.1.2** via HACS Redownload, restart HA and remove the schedule card if no longer wanted. Downgrading does not undo schedule values already written to the thermostat. Restore device schedules deliberately if required.
 
 Report problems in [this fork's issue tracker](https://github.com/Dayto-G/heatmiser_wifi_ha/issues). Remove credentials and other private details from logs before posting them.
 
@@ -193,7 +193,7 @@ Report problems in [this fork's issue tracker](https://github.com/Dayto-G/heatmi
 
 - **Joel Midstjärna** wrote the [original Heatmiser WiFi HA integration](https://github.com/midstar/heatmiser_wifi_ha) and the [original Python protocol library](https://github.com/midstar/heatmiser_wifi).
 - **Iain Bullock** extended the [HA integration](https://github.com/iainbullock/heatmiser_wifi_ha) with PRT-HW support, sensors, presets and services, and maintains a [protocol-library fork](https://github.com/iainbullock/heatmiser_wifi). The integration manifest currently depends on the package named `heatmiser_wifi`; it does not pin a GitHub library fork.
-- **Dayto-G** maintains this fork's v1.1.2 fixes, schedule-editor development and documentation.
+- **Dayto-G** maintains this fork's v1.1.2 fixes, schedule editor and documentation.
 
 The integration is distributed under the **MIT License**. The complete [LICENSE.txt](LICENSE.txt) retains the upstream notices **Copyright (c) 2019 Joel Midstjärna** and **Copyright (c) 2023 Iain Bullock**, together with the permission and warranty text. Retain those notices and the MIT permission text in copies or substantial portions of the software. The existing `LICENSE.txt` is the license file; a duplicate `LICENSE` is not needed.
 
