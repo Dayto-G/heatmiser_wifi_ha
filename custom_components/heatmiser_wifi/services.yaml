@@ -18,7 +18,7 @@ update_triggers:
             - "weekend_triggers"
     values:
       required: true
-      description: "Four ordered hour,minute,temperature triples; minutes 0/30, temperature 5–30 °C."
+      description: "Four ordered hour,minute,temperature triples; minutes 0/30, temperature 5â€“30 Â°C."
       example: "6,30,20,8,0,17,17,0,21,22,30,16"
       selector:
         text:

@@ -62,7 +62,7 @@ It uses the existing `heatmiser_wifi.update_triggers` service and
 ### Installation and dashboard setup
 
 1. In **HACS → Heatmiser WiFi → Redownload → Need a different version?**, select
-   **v1.2.0-beta.2**, download and restart Home Assistant.
+   **v1.2.0-beta.3**, download and restart Home Assistant.
 2. Refresh the browser or reopen the HA app. The integration serves and loads
    the card automatically. No file copy, `www` folder or manual dashboard resource
    is required, for either storage or YAML dashboards.
@@ -142,7 +142,7 @@ Remove the card from your dashboard to stop showing the editor. If needed,
 restore the previous integration version and restart HA. Removing the card does
 not restore previously saved thermostat schedules: record them beforehand.
 
-### Testing v1.2.0-beta.2 with HACS
+### Testing v1.2.0-beta.3 with HACS
 
 The stable GitHub release v1.1.2 and the main branch are unchanged. Installing a
 beta in the same Home Assistant instance replaces that instance's installed
@@ -155,7 +155,7 @@ v1.1.2, use a separate Home Assistant test instance.
    this repository under Custom repositories with category **Integration**.
 3. Open **HACS → Heatmiser WiFi → ⋮ → Redownload → Need a different version?**.
    Enable prerelease/beta versions if your HACS version offers that option, select
-   **v1.2.0-beta.2**, then download it. If missing, use **Update information**
+   **v1.2.0-beta.3**, then download it. If missing, use **Update information**
    or check for updates, and reopen the download dialog.
 4. Restart Home Assistant and refresh the browser. Add **Heatmiser heating
    schedule** from the dashboard card picker. The JavaScript loads automatically.

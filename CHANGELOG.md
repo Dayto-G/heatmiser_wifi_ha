@@ -1,5 +1,10 @@
 ## Changelog
 
+### v1.2.0-beta.3 - 23 October 2026
+- Fix services.yaml encoded with Windows-1252 instead of UTF-8.
+- Validate UTF-8 for packaged text files in the automated test suite.
+- Keep automatic card loading and existing thermostat behaviour unchanged.
+
 ### v1.2.0-beta.2 - 23 October 2026
 - Automatically serve and load the bundled card after HA startup.
 - Add visual entity selectors and matching thermostat discovery in the card picker.
