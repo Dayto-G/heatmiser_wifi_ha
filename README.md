@@ -61,39 +61,39 @@ It uses the existing `heatmiser_wifi.update_triggers` service and
 
 ### Installation and dashboard setup
 
-1. Install this prerelease using the HACS steps below, or copy the integration
-   into `/config/custom_components/heatmiser_wifi/`, including `schedule.py`, and
-   restart HA.
-2. HACS installs the bundled card at
-   `/config/custom_components/heatmiser_wifi/frontend/heatmiser-schedule-card.js`.
-   Copy that file to `/config/www/heatmiser-schedule-card.js` (create `www` if
-   needed). When installing from a source checkout, `frontend/heatmiser-schedule-card.js`
-   is an identical copy. Repeat the copy after updating the card.
-3. Under **Settings → Dashboards → Resources**, add a JavaScript module:
-   `/local/heatmiser-schedule-card.js?v=1`. For later updates, change the version
-   parameter and refresh the browser cache. For YAML-managed resources:
+1. In **HACS → Heatmiser WiFi → Redownload → Need a different version?**, select
+   **v1.2.0-beta.2**, download and restart Home Assistant.
+2. Refresh the browser or reopen the HA app. The integration serves and loads
+   the card automatically. No file copy, `www` folder or manual dashboard resource
+   is required, for either storage or YAML dashboards.
+3. Edit your dashboard, choose **Add card**, search for **Heatmiser heating
+   schedule** and select it. The card tries to detect the matching thermostat
+   and schedule sensor. Use the two entity selectors to check or change them,
+   then save the card.
 
-   ```yaml
-   lovelace:
-     resources:
-       - url: /local/heatmiser-schedule-card.js?v=1
-         type: module
-   ```
+If you prefer a manual YAML card, replace the example entity IDs:
 
-4. Find the actual entity IDs under **Developer Tools → States**. Add a manual
-   dashboard card, replacing both example IDs:
+```yaml
+type: custom:heatmiser-schedule-card
+entity: sensor.heating_program_mode
+climate_entity: climate.heating
+```
 
-   ```yaml
-   type: custom:heatmiser-schedule-card
-   entity: sensor.heating_program_mode
-   climate_entity: climate.heating
-   ```
+If you already followed the beta.1 manual setup, remove its old
+`/local/heatmiser-schedule-card.js` entry from **Settings → Dashboards → Resources**
+(or your YAML resources), then fully refresh the browser. Your existing card
+configuration can stay. The copied file in `www` is no longer needed. The
+integration does not delete or modify any of your existing resources or files.
+
+The bundled card is served at `/heatmiser_wifi/heatmiser-schedule-card.js` through
+Home Assistant's static file API and loaded with a content-based cache version.
+No files are copied and no persistent Lovelace resource is created. If UI
+registration fails, HA logs the error and the existing heating setup stays active.
 
 The card supports the existing single-thermostat integration, in Celsius and
 5/2 program mode (`program_mode` sensor state `0`). It does not change program mode.
 Seven-day and hot-water schedules are not edited. Both configured entities must
-belong to the same Heatmiser integration. HACS does not automatically install
-this frontend card as a dashboard resource.
+belong to the same Heatmiser integration. The integration automatically loads the bundled card after startup.
 
 ### Editing, saving and verifying
 
@@ -118,7 +118,8 @@ this frontend card as a dashboard resource.
   overwritten.
 - After a connection error, a write may already have been applied. The card keeps
   your edits and does not report success; reload and check before saving again.
-  If the card does not appear, check the resource URL and browser cache. If
+  If the card does not appear, restart HA, fully refresh the browser and check the
+  Heatmiser logs for card registration errors. If
   schedules are missing, check entity IDs, availability and 5/2 mode.
 
 Example of the same existing service under **Developer Tools → Actions**:
@@ -137,11 +138,11 @@ The tests do not use a real thermostat. After installation, compare the displaye
 values with the thermostat, deliberately save one group and check it again on the
 thermostat. Final end-to-end validation requires a physical Heatmiser and HA.
 
-Remove the card and dashboard resource to roll back the interface. If needed,
+Remove the card from your dashboard to stop showing the editor. If needed,
 restore the previous integration version and restart HA. Removing the card does
 not restore previously saved thermostat schedules: record them beforehand.
 
-### Testing v1.2.0-beta.1 with HACS
+### Testing v1.2.0-beta.2 with HACS
 
 The stable GitHub release v1.1.2 and the main branch are unchanged. Installing a
 beta in the same Home Assistant instance replaces that instance's installed
@@ -154,16 +155,14 @@ v1.1.2, use a separate Home Assistant test instance.
    this repository under Custom repositories with category **Integration**.
 3. Open **HACS → Heatmiser WiFi → ⋮ → Redownload → Need a different version?**.
    Enable prerelease/beta versions if your HACS version offers that option, select
-   **v1.2.0-beta.1**, then download it. If missing, use **Update information**
+   **v1.2.0-beta.2**, then download it. If missing, use **Update information**
    or check for updates, and reopen the download dialog.
-4. Restart Home Assistant. The manifest version is `1.2.0-beta.1`.
-5. Complete steps 2–4 above to copy the bundled JavaScript, register the dashboard
-   resource and add the card. HACS installs the integration bundle; it does not
-   register or copy the card into `/config/www` automatically.
-6. Compare both schedules with the thermostat before editing. Save one deliberate
+4. Restart Home Assistant and refresh the browser. Add **Heatmiser heating
+   schedule** from the dashboard card picker. The JavaScript loads automatically.
+5. Compare both schedules with the thermostat before editing. Save one deliberate
    change and verify it on the thermostat. This beta supports Celsius and 5/2
-   mode only; it does not switch the thermostat into a different program mode.
+   mode only; it does not switch program mode.
 
 To return to stable, use the same Redownload dialog, select **v1.1.2**, download
-and restart HA. Remove the beta dashboard card/resource if no longer used.
+and restart HA. Remove the beta card from your dashboard if no longer used.
 Downgrading the integration does not undo schedule changes written to the device.

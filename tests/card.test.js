@@ -3,7 +3,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 globalThis.HTMLElement = class {};
 let Card;
-globalThis.customElements = { define: (_name, value) => { Card = value; } };
+const registry = new Map();
+globalThis.customElements = { get: name => registry.get(name), define: (name, value) => { registry.set(name, value); if (name === 'heatmiser-schedule-card') Card = value; } };
 globalThis.window = {};
 const { parseSchedule, serialize, stepPath } = await import('../frontend/heatmiser-schedule-card.js');
 const good = '6,30,20,8,0,17,17,0,21,22,30,16';
@@ -75,4 +76,51 @@ test('HACS integration bundle contains the exact dashboard card', () => {
     readFileSync(new URL('../custom_components/heatmiser_wifi/frontend/heatmiser-schedule-card.js', import.meta.url), 'utf8'),
     readFileSync(new URL('../frontend/heatmiser-schedule-card.js', import.meta.url), 'utf8')
   );
+});
+
+test('card picker discovers the matching thermostat and exposes a visual editor', () => {
+  const c = card();
+  c._hass.states['sensor.heating_program_mode'] = {
+    entity_id: 'sensor.heating_program_mode', attributes: { weekday_triggers: good, weekend_triggers: good }
+  };
+  c._hass.states['climate.heating'] = { entity_id: 'climate.heating', attributes: {} };
+  assert.deepEqual(Card.getStubConfig(c._hass), { entity: 'sensor.heating_program_mode', climate_entity: 'climate.heating' });
+  assert.ok(registry.has('heatmiser-schedule-card-editor'));
+  assert.equal(window.customCards.length, 1);
+});
+test('visual editor keeps selectors in sync and emits configuration changes', () => {
+  const previousDocument = globalThis.document;
+  const pickers = [];
+  globalThis.document = { createElement: tag => {
+    const element = { tag, addEventListener: (_name, listener) => { element.change = listener; } };
+    return element;
+  } };
+  try {
+    const Editor = registry.get('heatmiser-schedule-card-editor');
+    const editor = Object.create(Editor.prototype);
+    editor.style = {};
+    editor.append = picker => pickers.push(picker);
+    const events = [];
+    editor.dispatchEvent = event => events.push(event);
+    editor.setConfig({ type: 'custom:heatmiser-schedule-card', entity: 'sensor.program', climate_entity: 'climate.heating' });
+    editor.hass = card()._hass;
+    assert.equal(pickers.length, 2);
+    assert.deepEqual(pickers[0].includeDomains, ['sensor']);
+    assert.equal(pickers[0].value, 'sensor.program');
+    pickers[1].change({ stopPropagation() {}, detail: { value: 'climate.upstairs' } });
+    assert.equal(events[0].type, 'config-changed');
+    assert.equal(events[0].detail.config.climate_entity, 'climate.upstairs');
+    assert.equal(events[0].detail.config.entity, 'sensor.program');
+    assert.equal(events[0].bubbles, true);
+    editor.hass = card()._hass;
+    assert.equal(pickers.length, 2);
+    assert.equal(pickers[1].value, 'climate.upstairs');
+    assert.equal(Card.getConfigElement().tag, 'heatmiser-schedule-card-editor');
+  } finally { globalThis.document = previousDocument; }
+});
+
+test('loading another version does not register the card or picker entry twice', async () => {
+  await import('../frontend/heatmiser-schedule-card.js?duplicate');
+  assert.equal(registry.get('heatmiser-schedule-card'), Card);
+  assert.equal(window.customCards.length, 1);
 });

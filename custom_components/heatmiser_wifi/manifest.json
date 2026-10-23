@@ -3,7 +3,10 @@
   "name": "Heatmiser WiFi",
   "documentation": "https://github.com/Dayto-G/heatmiser_wifi_ha",
   "issue_tracker": "https://github.com/Dayto-G/heatmiser_wifi_ha/issues",
-  "dependencies": [],
+  "dependencies": [
+    "frontend",
+    "http"
+  ],
   "after_dependencies": [],
   "codeowners": [
     "@Dayto-G"
@@ -11,6 +14,6 @@
   "requirements": [
     "heatmiser_wifi"
   ],
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0-beta.2",
   "iot_class": "local_polling"
 }

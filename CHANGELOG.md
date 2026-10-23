@@ -1,5 +1,11 @@
 ## Changelog
 
+### v1.2.0-beta.2 - 23 October 2026
+- Automatically serve and load the bundled card after HA startup.
+- Add visual entity selectors and matching thermostat discovery in the card picker.
+- No manual file copy or Lovelace resource registration required.
+- Keep heating active if frontend registration fails; leave user resources intact.
+
 ### v1.2.0-beta.1 - 23 October 2026
 - Prerelease of the editable weekday/weekend schedule card and validation.
 - Bundle the dashboard JavaScript inside the integration for HACS downloads.

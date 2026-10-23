@@ -38,6 +38,19 @@ CONFIG_SCHEMA = vol.Schema(
     extra=vol.ALLOW_EXTRA,
 )
 
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Keep device setup in its worker thread; register the UI on the event loop."""
+    if not await hass.async_add_executor_job(setup, hass, config):
+        return False
+    try:
+        from .frontend_setup import async_register_frontend
+
+        await async_register_frontend(hass)
+    except Exception:  # A dashboard failure must not disable working heating.
+        _LOGGER.exception("Schedule card could not be registered; heating remains available")
+    return True
+
+
 def setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
     heatmiser = Heatmiser(config[DOMAIN].get(CONF_HOST),config[DOMAIN].get(CONF_PORT),config[DOMAIN].get(CONF_PIN))

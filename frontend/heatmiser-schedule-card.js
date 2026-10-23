@@ -38,6 +38,19 @@ class HeatmiserScheduleCard extends HTMLElement {
     this.base = {};
     this.dirty = {};
   }
+  static getConfigElement() {
+    return document.createElement("heatmiser-schedule-card-editor");
+  }
+  static getStubConfig(hass) {
+    const states = Object.values(hass.states);
+    const sensors = states.filter(state => state.entity_id.startsWith("sensor.") &&
+      "weekday_triggers" in state.attributes && "weekend_triggers" in state.attributes);
+    for (const sensor of sensors) {
+      const climateId = sensor.entity_id.replace(/^sensor\./, "climate.").replace(/_program_mode$/, "");
+      if (hass.states[climateId]) return { entity: sensor.entity_id, climate_entity: climateId };
+    }
+    return { entity: sensors.length === 1 ? sensors[0].entity_id : "", climate_entity: "" };
+  }
   setConfig(config) {
     if (!config.entity?.startsWith("sensor.") || !config.climate_entity?.startsWith("climate."))
       throw Error("Set entity (the program_mode sensor) and climate_entity.");
@@ -190,6 +203,45 @@ class HeatmiserScheduleCard extends HTMLElement {
     }
   }
 }
-customElements.define("heatmiser-schedule-card", HeatmiserScheduleCard);
+class HeatmiserScheduleCardEditor extends HTMLElement {
+  setConfig(config) { this.config = { ...config }; this.render(); }
+  set hass(hass) { this._hass = hass; this.render(); }
+  render() {
+    if (!this.config || !this._hass) return;
+    if (!this.pickers) {
+      this.style.display = "grid";
+      this.style.gap = "16px";
+      this.pickers = {};
+      for (const [key, label, domain] of [
+        ["entity", "Schedule sensor (program_mode)", "sensor"],
+        ["climate_entity", "Heatmiser thermostat", "climate"],
+      ]) {
+        const picker = document.createElement("ha-entity-picker");
+        picker.label = label;
+        picker.includeDomains = [domain];
+        picker.addEventListener("value-changed", event => {
+          event.stopPropagation();
+          if (event.detail.value === this.config[key]) return;
+          this.config = { ...this.config, [key]: event.detail.value || "" };
+          this.dispatchEvent(new CustomEvent("config-changed", {
+            detail: { config: this.config }, bubbles: true, composed: true,
+          }));
+        });
+        this.pickers[key] = picker;
+        this.append(picker);
+      }
+    }
+    for (const [key, picker] of Object.entries(this.pickers)) {
+      picker.hass = this._hass;
+      picker.value = this.config[key] || "";
+    }
+  }
+}
+if (!customElements.get("heatmiser-schedule-card")) {
+  customElements.define("heatmiser-schedule-card", HeatmiserScheduleCard);
+}
+if (!customElements.get("heatmiser-schedule-card-editor")) {
+  customElements.define("heatmiser-schedule-card-editor", HeatmiserScheduleCardEditor);
+}
 window.customCards = window.customCards || [];
-window.customCards.push({ type: "heatmiser-schedule-card", name: "Heatmiser heating schedule", description: "Edit four periods for weekdays and weekends." });
+if (!window.customCards.some(card => card.type === "heatmiser-schedule-card")) window.customCards.push({ type: "heatmiser-schedule-card", name: "Heatmiser heating schedule", description: "Edit four periods for weekdays and weekends." });
