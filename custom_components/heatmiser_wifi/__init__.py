@@ -16,6 +16,9 @@ _LOGGER = logging.getLogger(__name__)
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
+from .schedule import validate_schedule
+from homeassistant.exceptions import HomeAssistantError
+
 DOMAIN = 'heatmiser_wifi'
 
 CONFIG_SCHEMA = vol.Schema(
@@ -34,6 +37,19 @@ CONFIG_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA,
 )
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Keep device setup in its worker thread; register the UI on the event loop."""
+    if not await hass.async_add_executor_job(setup, hass, config):
+        return False
+    try:
+        from .frontend_setup import async_register_frontend
+
+        await async_register_frontend(hass)
+    except Exception:  # A dashboard failure must not disable working heating.
+        _LOGGER.exception("Schedule card could not be registered; heating remains available")
+    return True
+
 
 def setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
@@ -77,33 +93,23 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
         trigger = call.data.get("trigger")
         values = call.data.get("values")
 
-        if trigger not in ("weekday_triggers", "weekend_triggers"):
-            raise ValueError("Unsupported schedule type")
-
-        values = [
-            int(v.strip())
-            for v in values.split(",")
-            if v.strip()
-        ]
-
-        if len(values) != 12:
-            raise ValueError("Expected exactly 12 values")
-
-        for i in range(0, 12, 3):
-            hour, minute, temp = values[i:i+3]
-
-            if not (
-                0 <= hour <= 23
-                and minute in (0, 30)
-                and 5 <= temp <= 30
-            ):
-                raise ValueError("Invalid schedule value")
+        try:
+            values = validate_schedule(trigger, values)
+        except (ValueError, TypeError) as err:
+            raise HomeAssistantError(str(err)) from err
 
         heatmiser = hass.data[DOMAIN]['heatmiser']
 
-        heatmiser.connect()
         try:
+            heatmiser.connect()
+            info = heatmiser.get_info()
+            if info.get('program_mode') != '2/5 mode':
+                raise HomeAssistantError("Weekday/weekend schedules require 5/2 day mode")
+            if info.get('temperature_format') != 'Celsius':
+                raise HomeAssistantError("Schedule editing currently requires Celsius")
             heatmiser.set_value(trigger, values)
+            # Read the device back; never present the submitted draft as device state.
+            hass.data[DOMAIN]['heatmiser_info'] = heatmiser.get_info()
         finally:
             heatmiser.disconnect()
 
