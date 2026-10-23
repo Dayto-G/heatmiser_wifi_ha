@@ -27,6 +27,7 @@
 - Preserve existing PRT fixes; stable main and v1.1.2 remain unchanged.
 
 ### Unreleased
+- Rewrite the README for the Dayto-G fork, clarify release/compatibility status, and verify unchanged upstream MIT notices.
 - Add editable weekday/weekend step graphs, independent saves and device readback.
 - Validate chronological schedules and Celsius/5/2 mode before schedule writes.
 - Preserve existing PRT fixes and service payload format.
