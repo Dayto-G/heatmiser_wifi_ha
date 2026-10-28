@@ -22,3 +22,20 @@ update_triggers:
       example: "6,30,20,8,0,17,17,0,21,22,30,16"
       selector:
         text:
+
+hold_on:
+  name: Start experimental timed hold
+  description: "Start a fixed 30-minute hold. Requires enable_experimental_hold. Hardware expiry is not yet verified."
+  fields:
+    temperature:
+      name: Temperature
+      required: true
+      selector:
+        number:
+          min: 5
+          max: 30
+          step: 1
+          unit_of_measurement: "°C"
+hold_off:
+  name: Cancel experimental timed hold
+  description: "Cancel the timer and let the thermostat resume its schedule. This does not force heating off."

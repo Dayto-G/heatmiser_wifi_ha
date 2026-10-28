@@ -31,7 +31,8 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(ATTR_FRIENDLY_NAME, default='_not_set_'): cv.string,
                 vol.Optional('max_temp', default=25): cv.positive_int,
                 vol.Optional('min_temp', default=5): cv.positive_int,
-                vol.Optional('step_temp', default=1): cv.positive_int
+                vol.Optional('step_temp', default=1): cv.positive_int,
+                vol.Optional('enable_experimental_hold', default=False): cv.boolean
             }
         )
     },
@@ -112,6 +113,35 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
             hass.data[DOMAIN]['heatmiser_info'] = heatmiser.get_info()
         finally:
             heatmiser.disconnect()
+
+    if config[DOMAIN].get("enable_experimental_hold", False):
+        from .hold import execute_hold
+
+        async def hold_action(call):
+            # A separate client avoids sharing the polling socket.
+            client = Heatmiser(
+                config[DOMAIN].get(CONF_HOST),
+                config[DOMAIN].get(CONF_PORT),
+                config[DOMAIN].get(CONF_PIN),
+            )
+            temperature = call.data.get("temperature") if call.service == "hold_on" else None
+            try:
+                await hass.async_add_executor_job(
+                    execute_hold, client, temperature,
+                    config[DOMAIN].get("min_temp"), config[DOMAIN].get("max_temp"),
+                )
+            except Exception as err:
+                raise HomeAssistantError(
+                    "Hold action failed. Inspect the thermostat; a hold may remain active."
+                ) from err
+
+        hass.services.register(
+            DOMAIN, "hold_on", hold_action,
+            schema=vol.Schema({vol.Required("temperature"): vol.All(
+                int, vol.Range(min=5, max=30)
+            )}),
+        )
+        hass.services.register(DOMAIN, "hold_off", hold_action, schema=vol.Schema({}))
 
     hass.services.register(DOMAIN, "set_value", set_value)
     hass.services.register(DOMAIN, "update_date_time", update_date_time)
