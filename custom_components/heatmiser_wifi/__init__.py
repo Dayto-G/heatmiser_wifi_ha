@@ -132,8 +132,12 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
                     call.data.get("duration_minutes", 30),
                 )
             except Exception as err:
+                _LOGGER.exception("Experimental hold action %s failed", call.service)
+                detail = str(err) if isinstance(err, ValueError) else type(err).__name__
                 raise HomeAssistantError(
-                    "Hold action failed. Inspect the thermostat; a hold may remain active."
+                    f"Hold action failed: {detail}. "
+                    "Inspect the thermostat; a hold may remain active. "
+                    "See the Heatmiser log for the underlying exception."
                 ) from err
 
         hass.services.register(
