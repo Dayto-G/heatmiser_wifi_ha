@@ -191,7 +191,9 @@ HA showed the temperature unchanged since 13:38 at 17.5 °C, with a newer entity
 report at 15:38, while humidity also updated. This confirms reports/HA writes
 can occur without a temperature value change; it does not prove that the
 WebSocket packet included a new temperature measurement. Waking the sensor
-allowed its current settings to be read. Full two-hour heartbeat delivery,
+allowed its current settings to be read. HA recorded another entity report at
+15:42:20 while the displayed temperature remained 17.5 °C, confirming reception
+after the manual wake without a value change. Full two-hour heartbeat delivery,
 five-minute USB delivery and raw notification contents still require a recorded
 on-device test in each power mode. The MQTT receipt path is tested with fixtures
 and is **not yet verified on this physical device**.
