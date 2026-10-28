@@ -198,3 +198,7 @@ Report problems in [this fork's issue tracker](https://github.com/Dayto-G/heatmi
 The integration is distributed under the **MIT License**. The complete [LICENSE.txt](LICENSE.txt) retains the upstream notices **Copyright (c) 2019 Joel Midstjärna** and **Copyright (c) 2023 Iain Bullock**, together with the permission and warranty text. Retain those notices and the MIT permission text in copies or substantial portions of the software. The existing `LICENSE.txt` is the license file; a duplicate `LICENSE` is not needed.
 
 Upstream funding attribution is retained in [.github/FUNDING.yml](.github/FUNDING.yml). To support Iain's upstream work, see [Iain Bullock on Buy Me a Coffee](https://www.buymeacoffee.com/iainbullock).
+
+## Experimental Shelly reference monitoring and simulation
+
+The development branch adds optional USB-C/battery simulation profiles for Shelly H&T Gen3. **Automatic heating control is unavailable in both profiles** because a HA timeout cannot guarantee restoring an overridden thermostat after a HA/network failure. Internal Heatmiser operation stays in control. See [the safety assessment, receipt tracking and setup](docs/reference-simulation.md) and the [dashboard view](examples/reference-dashboard.yaml). This is not part of the existing v1.2.0 release.

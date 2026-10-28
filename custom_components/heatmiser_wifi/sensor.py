@@ -27,6 +27,10 @@ def setup_platform(
 ) -> None:
     if discovery_info is None:
         return
+    if discovery_info.get('reference_monitor'):
+        from .reference_sensor import reference_entities
+        add_entities(reference_entities(hass))
+        return
     add_entities([programSensor(),air_temp_sensor(),date_time_sensor()])
 
 

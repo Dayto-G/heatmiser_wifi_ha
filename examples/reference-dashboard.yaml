@@ -1,0 +1,71 @@
+# Add this as a view to an editable dashboard. Check entity IDs first.
+title: Reference simulation
+path: reference-simulation
+icon: mdi:thermometer-check
+cards:
+  - type: markdown
+    content: >-
+      ## Reference sensor — simulation only
+
+      The internal Heatmiser thermostat controls the heating. This view cannot
+      enable automatic boiler control. Simulation demand is not actual heat demand.
+  - type: entities
+    title: Shelly and Heatmiser measurements
+    entities:
+      - entity: sensor.shellytempsensor_temperature
+        name: Shelly temperature (HA cached value)
+      - entity: sensor.shellytempsensor_battery
+        name: Shelly battery (HA cached value)
+      - entity: binary_sensor.shellytempsensor_external_power
+        name: External power (on = USB, off = battery; cached)
+      - entity: climate.heating
+      - entity: sensor.heatmiser_reference_temperature
+        name: Temperature in last accepted device notification
+      - entity: sensor.heatmiser_reference_power
+        name: Power confirmed by device notification
+  - type: entities
+    title: Simulation and report health
+    entities:
+      - entity: select.heatmiser_reference_profile
+        name: Rule profile (usb / battery)
+      - entity: sensor.heatmiser_reference_status
+      - entity: sensor.heatmiser_reference_report_age_seconds
+        name: Seconds since actual device notification
+      - entity: sensor.heatmiser_reference_measurement_age_seconds
+        name: Seconds since actual temperature report
+      - entity: sensor.heatmiser_reference_simulated_demand
+        name: Would request heat (1 = yes, 0 = no)
+      - entity: sensor.heatmiser_reference_remaining_demand_seconds
+        name: Seconds left in current simulated demand
+  - type: markdown
+    content: >-
+      **Reference status:** {{ states('sensor.heatmiser_reference_status') }}
+
+      **Reason:** {{ state_attr('sensor.heatmiser_reference_status', 'reason') }}
+
+      **Report transport:** {{ state_attr('sensor.heatmiser_reference_status', 'transport') }}
+
+      **Last received device notification:** {{ state_attr('sensor.heatmiser_reference_status', 'last_device_report') }}
+
+      **Last temperature report:** {{ state_attr('sensor.heatmiser_reference_status', 'last_temperature_report') }}
+
+      **HA entity write (not proof of a temperature measurement):** {{ state_attr('sensor.heatmiser_reference_status', 'ha_entity_reported_at') }}
+
+      {% if states('sensor.heatmiser_reference_status') != 'current' %}
+      ⚠ Reference information is uncertain, missing or offline. No external demand is allowed.
+      {% endif %}
+  - type: history-graph
+    title: Shelly versus Heatmiser (measured temperatures)
+    hours_to_show: 24
+    entities:
+      - entity: sensor.shellytempsensor_temperature
+        name: Shelly (HA cached)
+      - entity: sensor.heating_air_temp
+        name: Heatmiser internal
+      - entity: sensor.heatmiser_reference_temperature
+        name: Accepted temperature report
+  - type: history-graph
+    title: Simulated starts and stops (1 = demand, 0 = stopped)
+    hours_to_show: 24
+    entities:
+      - entity: sensor.heatmiser_reference_simulated_demand

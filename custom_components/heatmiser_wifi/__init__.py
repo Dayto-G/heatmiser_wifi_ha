@@ -31,7 +31,15 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(ATTR_FRIENDLY_NAME, default='_not_set_'): cv.string,
                 vol.Optional('max_temp', default=25): cv.positive_int,
                 vol.Optional('min_temp', default=5): cv.positive_int,
-                vol.Optional('step_temp', default=1): cv.positive_int
+                vol.Optional('step_temp', default=1): cv.positive_int,
+                vol.Optional('reference_monitor'): vol.Schema({
+                    vol.Required('temperature_entity'): cv.entity_id,
+                    vol.Optional('climate_entity', default='climate.heating'): cv.entity_id,
+                    vol.Optional('profile', default='battery'): vol.In(['usb', 'battery']),
+                    vol.Optional('mqtt_source', default=''): cv.string,
+                    vol.Optional('mqtt_topic', default=''): cv.string,
+                    vol.Optional('profiles', default={}): dict,
+                })
             }
         )
     },
@@ -48,6 +56,13 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         await async_register_frontend(hass)
     except Exception:  # A dashboard failure must not disable working heating.
         _LOGGER.exception("Schedule card could not be registered; heating remains available")
+    reference = config.get(DOMAIN, {}).get('reference_monitor')
+    if reference:
+        try:
+            from .reference_monitor import async_start_reference
+            await async_start_reference(hass, reference, config)
+        except Exception:
+            _LOGGER.exception("Reference simulation unavailable; internal heating unchanged")
     return True
 
 

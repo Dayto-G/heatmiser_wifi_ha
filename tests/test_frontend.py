@@ -109,7 +109,7 @@ class FrontendTests(unittest.IsolatedAsyncioTestCase):
                 register = AsyncMock(side_effect=RuntimeError('UI failure') if frontend_fails else None)
                 setup = Mock(return_value=backend_ok)
                 logger = Mock()
-                scope = {'HomeAssistant':object,'ConfigType':dict,'setup':setup,'_LOGGER':logger,'__package__':'test_heatmiser'}
+                scope = {'HomeAssistant':object,'ConfigType':dict,'setup':setup,'_LOGGER':logger,'__package__':'test_heatmiser','DOMAIN':'heatmiser_wifi'}
                 exec(compile(ast.Module(body=[handler],type_ignores=[]),str(source),'exec'),scope)
                 with patch.dict(sys.modules, {'test_heatmiser':ModuleType('test_heatmiser'),'test_heatmiser.frontend_setup':SimpleNamespace(async_register_frontend=register)}):
                     hass = self.hass()

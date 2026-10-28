@@ -1,5 +1,12 @@
 ## Changelog
 
+### v1.3.0-beta.1 - Unreleased
+- Add optional passive Shelly reference monitoring with separate device/temperature receipt ages.
+- Add configurable USB and battery simulation profiles, early stop, cooldown and demand limits.
+- Reject retained/replayed/invalid data and reset all simulated demand on restart.
+- Keep internal Heatmiser control, presets and schedules unchanged; physical control cannot be enabled.
+- Add native HA dashboard example and safety/verification documentation.
+
 ### v1.2.0 - 23 October 2026
 - Maintainer-published stable release of the visual schedule editor, including the automatic scale and day/night reference.
 - Published from the beta.5 commit; the existing release archive still reports 1.2.0-beta.5 in its manifest.
