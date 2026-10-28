@@ -41,7 +41,12 @@ prove which target the thermostat selects.
 The legacy v3 protocol uses write address 32 for the two-byte little-endian
 hold duration; read offsets 31/32 report it. The upstream Python library's
 get_info() reverses those read bytes, so these actions use get_dcb() for timer
-verification. The timer is armed and read back BEFORE changing the target. A
+verification. The timer is armed and its write acknowledgement verified BEFORE changing the target.
+Then target and duration are sent in one multi-item protocol message, consuming
+that write acknowledgement as well. Leaving acknowledgements unread can make
+subsequent reads return stale state. The combined reply confirms both values.
+One protocol message does not prove atomic firmware application; hardware testing
+is still required. No fallback to an unbounded temperature-only write is used. A
 failed target write/read leaves the bounded timer in place and raises an error.
 Do not blindly retry a failed command: inspect the thermostat first. A failed
 cancellation can leave an active hold. Each action uses a separate connection
