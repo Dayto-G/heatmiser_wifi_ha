@@ -15,8 +15,13 @@ data:
   temperature: 19
 ```
 
-Duration is deliberately fixed at 30 minutes, matching the observed thermostat
-web interface. Temperatures must be whole degrees Celsius within configured
+Duration defaults to 30 minutes, matching the observed thermostat web interface.
+Optionally send `duration_minutes: 15` alongside `temperature: 19` for a 15-minute
+hold. Whole minutes from 1 through 30 are accepted by the action; longer holds
+are deliberately excluded from this experimental bounded override. The firmware
+may reject or round a custom duration: timer read-back must be within one minute
+of the requested duration and never exceed it before the target is changed.
+Acceptance by the Python action does not prove hardware support. Temperatures must be whole degrees Celsius within configured
 min_temp/max_temp limits (and the service range 5–30). Only PRT/PRT-E/PRT-HW are
 accepted; starting requires Home and heating enabled. Existing holds must be
 cancelled explicitly, so repeated calls cannot silently renew them.
@@ -52,7 +57,7 @@ Protocol references (facts only; no third-party implementation copied):
 Mock tests verify validation, bytes, command order, rejected read-back and
 failure handling; they cannot prove firmware behaviour.
 
-With explicit approval and someone present, start a modest 30-minute hold,
+With explicit approval and someone present, start a modest hold (first verify a requested 15-minute countdown),
 confirm its target/countdown locally, cancel early and confirm schedule return.
 Then repeat and stop HA during the countdown: verify independent expiry on the
 physical thermostat. Record target, countdown and relay state before/after.

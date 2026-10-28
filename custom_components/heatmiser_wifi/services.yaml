@@ -25,7 +25,7 @@ update_triggers:
 
 hold_on:
   name: Start experimental timed hold
-  description: "Start a fixed 30-minute hold. Requires enable_experimental_hold. Hardware expiry is not yet verified."
+  description: "Start a timed hold (default 30 minutes; custom 1–30 minutes). Requires enable_experimental_hold. Hardware expiry is not yet verified."
   fields:
     temperature:
       name: Temperature
@@ -36,6 +36,16 @@ hold_on:
           max: 30
           step: 1
           unit_of_measurement: "°C"
+    duration_minutes:
+      name: Hold duration
+      description: "Whole minutes, 1–30. Firmware acceptance must be verified on the thermostat."
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 30
+          step: 1
+          unit_of_measurement: min
 hold_off:
   name: Cancel experimental timed hold
   description: "Cancel the timer and let the thermostat resume its schedule. This does not force heating off."

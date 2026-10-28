@@ -129,6 +129,7 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 await hass.async_add_executor_job(
                     execute_hold, client, temperature,
                     config[DOMAIN].get("min_temp"), config[DOMAIN].get("max_temp"),
+                    call.data.get("duration_minutes", 30),
                 )
             except Exception as err:
                 raise HomeAssistantError(
@@ -139,6 +140,8 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
             DOMAIN, "hold_on", hold_action,
             schema=vol.Schema({vol.Required("temperature"): vol.All(
                 int, vol.Range(min=5, max=30)
+            ), vol.Optional("duration_minutes", default=30): vol.All(
+                int, vol.Range(min=1, max=30)
             )}),
         )
         hass.services.register(DOMAIN, "hold_off", hold_action, schema=vol.Schema({}))

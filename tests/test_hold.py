@@ -15,6 +15,7 @@ class Fake:
         self.events = []
         self.ignore_timer = False
         self.fail_target = False
+        self.round_timer = None
     def connect(self): self.events.append("connect")
     def disconnect(self): self.events.append("disconnect")
     def get_info(self): return dict(self.info)
@@ -25,7 +26,8 @@ class Fake:
         return raw
     def set_dcb(self, address, data):
         self.events.append((address, bytes(data)))
-        if not self.ignore_timer: self.timer = int.from_bytes(data, "little")
+        if not self.ignore_timer:
+            self.timer = self.round_timer if self.round_timer is not None else int.from_bytes(data, "little")
     def set_value(self, key, value):
         self.events.append((key, value))
         if self.fail_target: raise OSError("network lost")
@@ -38,6 +40,25 @@ class HoldTests(unittest.TestCase):
         self.assertLess(c.events.index((32, b"\x1e\x00")), c.events.index(("set_room_temp", 19)))
         self.assertEqual(c.timer, 30)
         self.assertEqual(c.events[-1], "disconnect")
+    def test_custom_duration_and_boundaries(self):
+        for duration in (1, 15, 30):
+            c = Fake()
+            hold.execute_hold(c, 19, duration_minutes=duration)
+            self.assertEqual(c.timer, duration)
+            self.assertIn((32, duration.to_bytes(2, "little")), c.events)
+    def test_invalid_duration_does_not_connect(self):
+        for duration in (0, -1, 31, 65536, True, 15.5, "15", None):
+            c = Fake()
+            with self.assertRaises(ValueError):
+                hold.execute_hold(c, 19, duration_minutes=duration)
+            self.assertEqual(c.events, [])
+    def test_rounded_duration_rejected_before_target_write(self):
+        c = Fake()
+        c.round_timer = 30
+        with self.assertRaises(ValueError):
+            hold.execute_hold(c, 19, duration_minutes=15)
+        self.assertEqual(c.info["set_room_temp"], 18)
+        self.assertFalse(any(isinstance(e, tuple) and e[0] == "set_room_temp" for e in c.events))
     def test_cancel_only_timer(self):
         c = Fake()
         c.timer = 30

@@ -18,13 +18,15 @@ def read_hold(client):
     return raw[31] | (raw[32] << 8)
 
 
-def execute_hold(client, temperature=None, minimum=5, maximum=25):
+def execute_hold(client, temperature=None, minimum=5, maximum=25, duration_minutes=30):
     """Arm and verify the timer BEFORE raising a target; never retry blindly.
 
     A target-write/read failure leaves the verified timer armed. Cancellation
     clears the timer only; the device determines the resumed schedule target.
     """
     if temperature is not None:
+        if type(duration_minutes) is not int or not 1 <= duration_minutes <= 30:
+            raise ValueError("Hold duration must be a whole number of minutes from 1 to 30")
         if type(temperature) is not int or not minimum <= temperature <= maximum:
             raise ValueError("Hold temperature must be a whole degree within configured limits")
     with HOLD_LOCK:
@@ -45,12 +47,12 @@ def execute_hold(client, temperature=None, minimum=5, maximum=25):
                     raise ValueError("Starting a hold requires Home, heating enabled and Celsius")
                 if read_hold(client) != 0:
                     raise ValueError("Cancel the existing hold before starting another")
-                client.set_dcb(32, bytearray([30, 0]))
-                if not 29 <= read_hold(client) <= 30:
+                client.set_dcb(32, bytearray(duration_minutes.to_bytes(2, 'little')))
+                if not max(1, duration_minutes - 1) <= read_hold(client) <= duration_minutes:
                     raise ValueError("Timer was not confirmed; target has not been changed")
                 client.set_value("set_room_temp", temperature)
                 result = client.get_info()
-                if result.get("set_room_temp") != temperature or not 1 <= read_hold(client) <= 30:
+                if result.get("set_room_temp") != temperature or not 1 <= read_hold(client) <= duration_minutes:
                     raise ValueError("Hold could not be confirmed; inspect thermostat before retrying")
             return client.get_info()
         finally:
